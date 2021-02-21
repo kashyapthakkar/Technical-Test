@@ -1,11 +1,11 @@
 # Technical-Test
-*A Single Page application demonstrating CRUD functionality using PHP and MySQL
+* A Single Page application demonstrating CRUD functionality using PHP and MySQL
 
 ## Technologies Used
-*Vue
-*PHP
-*MySQL
-*Bootstrap
+* Vue
+* PHP
+* MySQL
+* Bootstrap
 
 ## Installation
 * Create a new MySQL database named `technical_test`
