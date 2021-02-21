@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Technical Test</title>
+    <!--Bootstrap CSS CDN-->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+      crossorigin="anonymous"
+    />
+    <style>
+      body {
+        margin: 5px;
+        background-color: #efefef;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="container">
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          v-model="newDoc.cat_id"
+          @change="changeCategory($event)"
+        >
+          <option v-for="cat in cats" :value="cat.id" :key="cat.id">
+            {{ cat.category }}
+          </option>
+        </select>
+        <!--Alert Section-->
+        <div class="alert alert-success" role="alert" v-if="success">
+          {{success}}
+          <span style="margin-right: 0; float: right">
+            <a style="cursor: pointer" @click="removeAlert()">
+              <span aria-hidden="true">&times;</span>
+            </a>
+          </span>
+        </div>
+        <div class="alert alert-danger" role="alert" v-if="error">
+          {{error}}
+          <span style="margin-right: 0; float: right">
+            <a style="cursor: pointer" @click="removeAlert()">
+              <span aria-hidden="true">&times;</span>
+            </a>
+          </span>
+        </div>
+        <!--Docements Table-->
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Created</th>
+              <th scope="col">Last Updated</th>
+              <th scope="col">Edit</th>
+              <th scope="col">Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="doc in docs" :key="doc.id">
+              <td scope="col">{{ doc.name }}</td>
+              <td scope="col">{{ doc.created_at }}</td>
+              <td scope="col">{{ doc.updated_at }}</td>
+              <td scope="col">
+                <button
+                  class="btn btn-warning"
+                  @click="selectDocument(doc)"
+                  data-bs-toggle="modal"
+                  data-bs-target="#updateModal"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    class="bi bi-pencil-square"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"
+                    />
+                  </svg>
+                </button>
+              </td>
+              <td scope="col">
+                <button
+                  class="btn btn-danger"
+                  @click="selectDocument(doc)"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteModal"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    class="bi bi-trash"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"
+                    />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="d-grid gap-2">
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#addModal"
+          >
+            Add New Document
+          </button>
+        </div>
+        <!-- Add Document Modal -->
+        <div
+          class="modal fade"
+          id="addModal"
+          tabindex="-1"
+          aria-labelledby="addModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                  Add New Document
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <form action="#" method="POST">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Name of Document</label>
+                    <input
+                      type="text"
+                      placeholder="Enter Document Name"
+                      class="form-control"
+                      v-model="newDoc.name"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-success"
+                    @click="addDocument()"
+                  >
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Update Document Modal -->
+        <div
+          class="modal fade"
+          id="updateModal"
+          tabindex="-1"
+          aria-labelledby="updateModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                  Update Document
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <form action="#" method="POST">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label class="form-label">Name of Document</label>
+                    <input
+                      type="text"
+                      placeholder="Enter Document Name"
+                      class="form-control"
+                      v-model="currentDoc.name"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-success"
+                    @click="updateDocument()"
+                  >
+                    Update
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Document Modal -->
+        <div
+          class="modal fade"
+          id="deleteModal"
+          tabindex="-1"
+          aria-labelledby="deleteModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                  Delete Document
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <form action="#" method="POST">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <h5>Are you sure you want to delete this document?</h5>
+                    <p>{{currentDoc.name}}</p>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-success"
+                    @click="deleteDocument()"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    data-bs-dismiss="modal"
+                  >
+                    No
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--jquery CDN-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!--axios CDN-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- VueJS CDN-->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script type="text/javascript">
+      var app = new Vue({
+        el: "#app",
+        data: {
+          error: "",
+          success: "",
+          docs: [],
+          cats: [],
+          newDoc: { cat_id: 1, name: "" },
+          currentDoc: {},
+          currentCategory: 1,
+          tempName: "",
+        },
+        mounted: function () {
+          this.getDocs(); //Gets documents for the first category
+          this.getcats(); //Gets categories
+        },
+        methods: {
+          /**
+           * Gets called on every reload to show documents available for selected category
+           */
+          getDocs() {
+            //Get request to get documents
+            axios
+              .get(
+                "http://localhost:8080/Full%20Stack%20Developer%20Technical%20Test/process.php?action=read&id=" +
+                  this.currentCategory
+              )
+              .then(function (response) {
+                if (response.data.error) {
+                  app.error = response.data.message;
+                } else {
+                  app.docs = response.data.docs;
+                }
+              });
+          },
+          /**
+           * Gets called on every reload to show categories
+           */
+          getcats() {
+            //Get request to get categories
+            axios
+              .get(
+                "http://localhost:8080/Full%20Stack%20Developer%20Technical%20Test/process.php?action=cats"
+              )
+              .then(function (response) {
+                if (response.data.error) {
+                  app.error = response.data.message;
+                } else {
+                  app.cats = response.data.cats;
+                }
+              });
+          },
+          /**
+           * Gets called when user tries to add/update document to send a POST request to backend with FormData object
+           */
+          toFormData(obj) {
+            var fd = new FormData();
+            for (var i in obj) {
+              fd.append(i, obj[i]);
+            }
+            return fd;
+          },
+          /**
+           * Gets called when user clicks "Add New Document" Button.
+           * Adds a new document for the selected category.
+           */
+          addDocument() {
+            app.removeAlert(); //to remove alert messages
+            if (app.newDoc.name) {
+              //Checks if document name is already exist
+              for (var i = 0; i < app.docs.length; i++) {
+                if (app.newDoc.name === app.docs[i].name) {
+                  app.error = "Document Name Already Exist";
+                  $("#addModal").modal("toggle"); //closes Add Document Modal
+                }
+              }
+              if (!app.error) {
+                var formData = app.toFormData(app.newDoc);
+                //post request to add a new user
+                axios
+                  .post(
+                    "http://localhost:8080/Full%20Stack%20Developer%20Technical%20Test/process.php?action=create",
+                    formData
+                  )
+                  .then(function (response) {
+                    app.newDoc = { cat_id: app.currentCategory, name: "" };
+                    if (response.data.error) {
+                      app.error = response.data.message;
+                    } else {
+                      app.success = response.data.message;
+                      app.getDocs();
+                      $("#addModal").modal("toggle"); //closes Add Document Modal
+                    }
+                  });
+              }
+            }
+          },
+          /**
+           * Gets called when user clicks edit icon for specific document.
+           * Updates a selected document.
+           */
+          updateDocument() {
+            app.removeAlert(); //to remove alert messages
+            if (app.tempName == app.currentDoc.name) {
+              app.error = "No changes have been made.";
+              $("#updateModal").modal("toggle"); //closes Update Document Modal
+            } else {
+              if (app.currentDoc.name) {
+                //Checks if document name is already exist
+                for (var i = 0; i < app.docs.length; i++) {
+                  if (app.currentDoc.name === app.docs[i].name) {
+                    app.error = "Document Name Already Exist";
+                    console.log(app.error);
+                    $("#updateModal").modal("toggle"); //closes Update Document Modal
+                  }
+                }
+              }
+
+              if (!app.error) {
+                var formData = app.toFormData(app.currentDoc);
+                //POST request to update selected document
+                axios
+                  .post(
+                    "http://localhost:8080/Full%20Stack%20Developer%20Technical%20Test/process.php?action=update",
+                    formData
+                  )
+                  .then(function (response) {
+                    app.currentDoc = {};
+                    if (response.data.error) {
+                      app.error = response.data.message;
+                    } else {
+                      app.success = response.data.message;
+                      app.getDocs();
+                      $("#updateModal").modal("toggle"); //closes Update Document Modal
+                    }
+                  });
+              }
+            }
+          },
+          /**
+           * Gets called when user clicks delete icon for specific document.
+           * Deletes a selected document.
+           */
+          deleteDocument() {
+            app.removeAlert(); //to remove alert messages
+            var formData = app.toFormData(app.currentDoc);
+            //POST request to delect selected document
+            axios
+              .post(
+                "http://localhost:8080/Full%20Stack%20Developer%20Technical%20Test/process.php?action=delete",
+                formData
+              )
+              .then(function (response) {
+                app.currentDoc = {};
+                if (response.data.error) {
+                  app.error = response.data.message;
+                } else {
+                  app.success = response.data.message;
+                  app.getDocs();
+                  $("#deleteModal").modal("toggle"); //closes Delete Document Modal
+                }
+              });
+          },
+          /**
+           * Gets called when user tries to change current category.
+           * Shows documents available for selected category.
+           */
+          changeCategory(event) {
+            app.removeAlert(); //closes Add Document Modal
+            app.currentCategory = parseInt(event.target.value);
+            app.getDocs();
+          },
+
+          /**
+           * Gets called when user clicks edit/delete icon for specific document.
+           * Gets the data of the selected document in order to update/delete it.
+           */
+          selectDocument(document) {
+            app.currentDoc = JSON.parse(JSON.stringify(document));
+            app.tempName = document.name;
+          },
+          /**
+           * Gets called when user performs any CRUD functionality.
+           * Shows success/error message.
+           */
+          removeAlert() {
+            app.success = "";
+            app.error = "";
+          },
+        },
+      });
+    </script>
+    <!--Bootstrap JS CDN-->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
