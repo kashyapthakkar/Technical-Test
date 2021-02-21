@@ -1,7 +1,7 @@
 # Technical-Test
 *A Single Page application demonstrating CRUD functionality using PHP and MySQL
 
-#Technologies_Used
+## Technologies Used
 *Vue
 *PHP
 *MySQL
